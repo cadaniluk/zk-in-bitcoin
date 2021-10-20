@@ -1,4 +1,6 @@
-First and foremost, run `git submodule update --init`. Then use `make` or `make all` to build both the MPC and zk-SNARK implementations. Use `make common_master_mpc` or `make common_master_zksnark`, respectively, to build either one.
+This repository contains two programs that implement concepts described in my bachelor thesis. The repository also contains the thesis as a PDF.
+
+Use `make` or `make all` to build both the MPC and zk-SNARK implementations. Use `make common_master_mpc` or `make common_master_zksnark`, respectively, to build either one.
 
 To run the zk-SNARK implementation, use `./common_master`. That will print some help to get started.
 
