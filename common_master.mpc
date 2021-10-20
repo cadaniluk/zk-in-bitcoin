@@ -1,0 +1,65 @@
+# Player 0 is the prover, player 1 is the verifier.
+#
+# Primary input (public): (h1, h2)
+# Auxiliary input (private, only known to prover): m, i, j
+# Pseudocode (H is a cryptographically secure hash function):
+# return h1 == H(m || i) && h2 == H(m || j)
+
+# The Keccak circuit necessary for the sha3_256 function comes from
+# https://homes.esat.kuleuven.be/~nsmart/MPC/Keccak_f.txt
+
+from circuit import sha3_256
+
+# Custom data types.
+master_t = sbits.get_type(16)
+index_t = sbits.get_type(8)
+preimage_t = sbits.get_type(master_t.n + index_t.n)
+
+# The hash values as strings.
+h1_str = "37ad9e5625d7e5fae209db84a28dc45d3e8e4631f41827a837db8073de4629eb"
+h2_str = "53937f3b7fb58e104f113264695d5da34e4bf43da3dc3652ac7d868b4c122ce9"
+
+# Store string representation of hash values in 256-bit integers.
+h1 = sbits.get_type(256)(int(h1_str, 16))
+h2 = sbits.get_type(256)(int(h2_str, 16))
+
+# TODO: this doesnt work because 256 bit integers are apparently not handled appropriately. either figure out how to make it work or go for something else.
+# h1 = sbits.get_type(256).get_input_from(1)
+# h2 = sbits.get_type(256).get_input_from(1)
+
+# Read master key and indices from player 0.
+m = master_t.get_input_from(0)
+i = index_t.get_input_from(0)
+j = index_t.get_input_from(0)
+
+# Concatenate master key and indices bitwise to obtain the preimages plugged
+# into the hash function.
+mi = preimage_t((m << index_t.n) + i)
+mj = preimage_t((m << index_t.n) + j)
+
+# Compute SHA3-256 values of preimages and store the results.
+result = sha3_256(sbitvec([mi, mj])).elements()
+h_mi = result[0]
+h_mj = result[1]
+
+# Check if the computed hash values match the given ones.
+# If so, 1 is printed, if not, 0 is printed.
+h1_good = h1.equal(h_mi)
+h2_good = h2.equal(h_mj)
+good = h1_good.bit_and(h2_good)
+
+print_ln('result: %s', good.reveal())
+
+# Debug output.
+#print_ln('DEBUG OUTPUT')
+#print_ln('h1: %s', h1.reveal())
+#print_ln('h2: %s', h2.reveal())
+#print_ln('m: %s', m.reveal())
+#print_ln('i: %s', i.reveal())
+#print_ln('j: %s', j.reveal())
+#print_ln('h_mi: %s', h_mi.reveal())
+#print_ln('h_mj: %s', h_mj.reveal())
+#print_ln('h1_good: %s', h1_good.reveal())
+#print_ln('h2_good: %s', h2_good.reveal())
+#h_mi.reveal().print_reg()
+#h_mj.reveal().print_reg()
